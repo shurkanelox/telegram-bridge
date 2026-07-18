@@ -42,8 +42,8 @@ log = logging.getLogger("bridge")
 # Конфигурация
 # ---------------------------------------------------------------------------
 
-TG_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-MAX_TOKEN = os.environ["MAX_BOT_TOKEN"]
+TG_TOKEN = os.environ["8620856910:AAHqxmXlHTwCI8j8fcbkwW5vIHfHJUfwg8s"]
+MAX_TOKEN = os.environ["f9LHodD0cOKtDLhgH2ZovjV6MCBTlktcFzJhO7GiCJ0jlevq9zLagGQrtXsEbtINZxuXcbkNrcIqujZYrg6a"]
 
 _max_chat_raw = os.environ.get("MAX_CHAT_ID", "").strip()
 MAX_CHAT_ID = int(_max_chat_raw) if _max_chat_raw else None
