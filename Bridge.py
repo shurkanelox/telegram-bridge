@@ -111,7 +111,7 @@ async def tg_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         return
 
     display_name = user.full_name
-    header = "👤"+ {display_name}
+    header = "👤"+ display_name
     caption = message.caption or message.text or ""
     text = f"{header}\n{caption}" if caption else header
 

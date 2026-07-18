@@ -10,9 +10,10 @@
 
 import asyncio
 import sqlite3
+import os
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "bridge.db"
+DB_PATH = Path(os.getenv("DB_PATH", "/data/bridge.db"))
 
 _conn = sqlite3.connect(DB_PATH, check_same_thread=False)
 _conn.execute(
