@@ -42,7 +42,7 @@ log = logging.getLogger("bridge")
 # Конфигурация
 # ---------------------------------------------------------------------------
 
-TG_TOKEN = os.environ["TELEGRATELEGRAM_BOT_TOKEN"]
+TG_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 MAX_TOKEN = os.environ["MAX_BOT_TOKEN"]
 
 _max_chat_raw = os.environ.get("MAX_CHAT_ID", "").strip()
