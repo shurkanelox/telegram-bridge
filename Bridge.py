@@ -110,7 +110,7 @@ async def tg_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         log.warning("MAX_CHAT_ID не задан в .env — не знаю, куда пересылать. Впиши ID MAX-чата и перезапусти бота.")
         return
 
-    display_name = user.full_name + (f" (@{user.username})" if user.username else "")
+    display_name = user.full_name
     header = f"👤 {display_name} [id{user.id}]"
     caption = message.caption or message.text or ""
     text = f"{header}\n{caption}" if caption else header
