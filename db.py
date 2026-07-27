@@ -10,10 +10,9 @@
 
 import asyncio
 import sqlite3
-import os
 from pathlib import Path
 
-DB_PATH = Path(os.getenv("DB_PATH", "/data/bridge.db"))
+DB_PATH = Path(__file__).parent / "bridge.db"
 
 _conn = sqlite3.connect(DB_PATH, check_same_thread=False)
 _conn.execute(
@@ -23,6 +22,15 @@ _conn.execute(
         tg_user_id  INTEGER NOT NULL,
         tg_name     TEXT,
         created_at  TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+    """
+)
+_conn.execute(
+    """
+    CREATE TABLE IF NOT EXISTS active_recipient (
+        id          INTEGER PRIMARY KEY CHECK (id = 1),
+        tg_user_id  INTEGER NOT NULL,
+        tg_name     TEXT
     )
     """
 )
@@ -44,5 +52,23 @@ async def get_tg_user(max_mid: str) -> tuple[int, str] | None:
         row = _conn.execute(
             "SELECT tg_user_id, tg_name FROM mid_map WHERE max_mid = ?",
             (str(max_mid),),
+        ).fetchone()
+    return tuple(row) if row else None
+
+
+async def set_active_recipient(tg_user_id: int, tg_name: str) -> None:
+    """Запоминает, кому пересылать следующие сообщения из MAX без Reply."""
+    async with _lock:
+        _conn.execute(
+            "INSERT OR REPLACE INTO active_recipient (id, tg_user_id, tg_name) VALUES (1, ?, ?)",
+            (tg_user_id, tg_name),
+        )
+        _conn.commit()
+
+
+async def get_active_recipient() -> tuple[int, str] | None:
+    async with _lock:
+        row = _conn.execute(
+            "SELECT tg_user_id, tg_name FROM active_recipient WHERE id = 1"
         ).fetchone()
     return tuple(row) if row else None

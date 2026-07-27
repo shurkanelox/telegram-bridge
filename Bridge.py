@@ -48,9 +48,6 @@ MAX_TOKEN = os.environ["MAX_BOT_TOKEN"]
 _max_chat_raw = os.environ.get("MAX_CHAT_ID", "").strip()
 MAX_CHAT_ID = int(_max_chat_raw) if _max_chat_raw else None
 
-# Отправлять ли автору в Telegram короткое подтверждение "сообщение доставлено"
-SEND_ACK_TO_TG_USER = True
-
 # Приветственное сообщение при первом /start
 WELCOME_TEXT = (
     "Здравсвтуйте! 👋\n\n"
@@ -153,9 +150,6 @@ async def tg_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         if local_path and local_path.exists():
             local_path.unlink(missing_ok=True)
 
-        if SEND_ACK_TO_TG_USER:
-            await message.reply_text("✅ Сообщение передано.")
-
     except Exception:
         log.exception("Ошибка при пересылке сообщения из Telegram в MAX")
 
@@ -179,20 +173,29 @@ async def max_handler(event: MessageCreated) -> None:
         return
 
     link = event.message.link
-    if link is None or getattr(link, "type", None) != "reply":
-        await event.message.reply(
-            "Чтобы ответить человеку — сделай Reply (ответ) на его сообщение в этом чате."
-        )
-        return
+    is_reply = link is not None and getattr(link, "type", None) == "reply"
 
-    replied_mid = str(link.message.mid)
-    target = await db.get_tg_user(replied_mid)
+    if is_reply:
+        replied_mid = str(link.message.mid)
+        target = await db.get_tg_user(replied_mid)
 
-    if target is None:
-        await event.message.reply(
-            "Не нашёл, кому это переслать (слишком старое сообщение или бот был перезапущен без сохранённых данных)."
-        )
-        return
+        if target is None:
+            await event.message.reply(
+                "Не нашёл, кому это переслать (слишком старое сообщение или бот был перезапущен без сохранённых данных)."
+            )
+            return
+
+        # Reply на конкретное сообщение переключает "активного" получателя —
+        # следующие сообщения без Reply будут уходить этому же человеку.
+        await db.set_active_recipient(*target)
+
+    else:
+        target = await db.get_active_recipient()
+        if target is None:
+            await event.message.reply(
+                "Чтобы ответить человеку — сделай Reply (ответ) на его сообщение в этом чате."
+            )
+            return
 
     tg_user_id, tg_name = target
     body = event.message.body
